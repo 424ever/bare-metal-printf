@@ -1,0 +1,28 @@
+bare-metal-printf
+=================
+
+printf() implementation as a multiboot kernel
+
+Dependencies
+------------
+
+  - make
+  - a i686-elf-gcc in your $PATH
+  - grub2 (for creating a bootable image)
+
+
+Building
+--------
+
+  - To build only the multiboot kernel:
+     $ make kernel
+
+  - To build a bootable iso image:
+     $ make image
+    or
+     $ make
+
+Running tests
+-------------
+
+  - lol

@@ -1,0 +1,4 @@
+isodir
+src/**/*.o
+printf.iso
+

@@ -1,0 +1,9 @@
+-std=c99
+-ffreestanding
+-O2
+-Wall
+-Wextra
+-Werror
+-Wno-unused-function
+-Isrc
+-pedantic-errors
