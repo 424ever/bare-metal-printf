@@ -8,7 +8,7 @@
 
 int printf(const char *format, ...)
 {
-	int len;
+	int	len;
 	va_list ap;
 
 	_stdio_term_init();

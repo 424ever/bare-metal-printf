@@ -14,7 +14,7 @@
 
 /* global data */
 static printf_resolved_arg resolved_numbered_args[NL_ARGMAX];
-static int		   printf_using_numbered_args;
+static bool		   printf_using_numbered_args;
 
 /* function declaractions */
 static bool determine_using_numbered_args(const char *format);
@@ -115,7 +115,9 @@ bool determine_using_numbered_args(const char *format)
 	 * first format specifier.
 	 */
 	++format;
-	if (isdigit(*format))
+	for (; isdigit(*format); ++format)
+		;
+	if (*format == '$')
 		return true;
 
 	return false;
