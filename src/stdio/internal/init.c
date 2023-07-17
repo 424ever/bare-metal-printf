@@ -5,7 +5,7 @@
 
 static int term_initialized = 0;
 
-void _stdio_term_init(void)
+void __stdio_term_init(void)
 {
 	if (term_initialized)
 		return;
@@ -13,4 +13,3 @@ void _stdio_term_init(void)
 	terminal_initialize();
 	term_initialized = 1;
 }
-

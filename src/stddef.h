@@ -21,6 +21,7 @@ typedef int32_t				     ptrdiff_t;
 typedef int64_t	 intmax_t;
 typedef uint64_t uintmax_t;
 
+typedef int64_t	 ssize_t;
 typedef uint64_t size_t;
 
 #endif

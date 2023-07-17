@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <wchar.h>
 
 #ifndef __PRINTF_IMPL_H
 #	define __PRINTF_IMPL_H
@@ -20,7 +19,7 @@
 #	define PRINTF_FLG_PREC_ARG  0x02 /* Defined via int argument */
 
 /* length modifiers */
-#	define PTRINF_LEN_CHAR	       "hh" /* (un)signed char */
+#	define PRINTF_LEN_CHAR	       "hh" /* (un)signed char */
 #	define PRINTF_LEN_SHORT       "h"  /* (unsigned) short */
 #	define PRINTF_LEN_LONG	       "l"  /* (unsigned) long */
 #	define PRINTF_LEN_LONG_LONG   "ll" /* (unsigned long long) */
@@ -66,7 +65,7 @@ typedef union _printf_arg_value
 	signed char	   sc;
 	signed char	  *scp;
 	size_t		   z;
-	size_t		  *zp;
+	ssize_t		  *zp;
 	uintmax_t	   uim;
 	unsigned	   ui;
 	unsigned char	   uc;
@@ -74,27 +73,50 @@ typedef union _printf_arg_value
 	unsigned long long ull;
 	unsigned short	   us;
 	void		  *vp;
-	wchar_t		   wcp;
-	wint_t		   wi;
 } printf_arg_value;
+typedef enum _printf_resolved_arg_type
+{
+	POINTER,
+	DOUBLE,
+	INT,
+	INTMAX,
+	LONG,
+	LONGDOUBLE,
+	LONGLONG,
+	PTRDIFF,
+	SHORT,
+	CHAR,
+	SIZET,
+} printf_resolved_arg_type;
 typedef struct _printf_resolved_arg
 {
-	char		 type[3]; /* d, ld, c, s, ... */
-	printf_arg_value value;
+	printf_resolved_arg_type type;
+	bool			 used;
+	printf_arg_value	 value;
 } printf_resolved_arg;
 typedef void (*emit_func)(void *, char);
+typedef struct _printf_emit
+{
+	emit_func emit;
+	void	 *cookie;
+} printf_emit;
 
-void emit_putchar(void *cookie, char c);
-void emit_string(emit_func emit, void *cookie, const char *str);
-int  printf_impl(const char *format, va_list ap, emit_func emit, void *cookie);
+int  __printf_impl(const char *format, va_list ap, printf_emit emit);
+void __printf_repeat(char c, size_t n, printf_emit emit);
+
+/* default emit functions */
+void __putchar_emit(void *cookie, char c);
+
+/* emit helpers */
+void __emit_char(printf_emit emit, char c);
+void __emit_string(printf_emit emit, const char *str);
 
 /* output functions */
-void _printf_char(bool numbered_args, va_list ap, printf_resolved_arg *args,
-		  printf_conv_spec spec, emit_func emit, void *cookie);
-void _printf_char_string(bool numbered_args, va_list ap,
-			 printf_resolved_arg *args, printf_conv_spec spec,
-			 emit_func emit, void *cookie);
-void _printf_unimplemented_specifier(char specifier, emit_func emit,
-				     void *cookie);
+void __printf_char(bool numbered_args, va_list *ap, printf_resolved_arg *args,
+		   printf_conv_spec spec, printf_emit emit);
+void __printf_char_string(bool numbered_args, va_list *ap,
+			  printf_resolved_arg *args, printf_conv_spec spec,
+			  printf_emit emit);
+void __printf_unimplemented_specifier(char specifier, printf_emit emit);
 
 #endif

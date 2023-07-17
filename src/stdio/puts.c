@@ -8,11 +8,10 @@ int puts(const char *s)
 {
 	size_t len;
 
-	_stdio_term_init();
+	__stdio_term_init();
 
-	len = strlen (s);
+	len = strlen(s);
 	terminal_write(s, len);
 
 	return 1;
 }
-

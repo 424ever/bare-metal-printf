@@ -8,17 +8,20 @@
 
 int printf(const char *format, ...)
 {
-	int	len;
-	va_list ap;
+	int	    len;
+	va_list	    ap;
+	printf_emit emit;
 
-	_stdio_term_init();
+	__stdio_term_init();
 
 	va_start(ap, format);
 
-	len = printf_impl(format, ap, &emit_putchar, NULL);
+	emit.emit   = &__putchar_emit;
+	emit.cookie = NULL;
+
+	len = __printf_impl(format, ap, emit);
 
 	va_end(ap);
 
 	return len;
 }
-

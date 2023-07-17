@@ -7,5 +7,5 @@
 
 void _kernel_main(void)
 {
-	printf("Hello, %s%c", "world", '!');
+	printf("Hello, '%7.3s''%*c'", "world", 30, '!');
 }

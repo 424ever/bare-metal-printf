@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
 
 #include "printf_impl.h"
 #include "stdio/stdio_internal.h"
@@ -20,27 +19,25 @@ static bool		   printf_using_numbered_args;
 static bool determine_using_numbered_args(const char *format);
 static int  parse_conv_spec(const char *str, printf_conv_spec *spec);
 static int parse_width(const char *str, int *width, printf_prec_flags_t *flags);
-static int printf_print_conv_spec(const char *format, va_list ap,
-				  emit_func emit, void *cookie);
+static int printf_print_conv_spec(const char *format, va_list *ap,
+				  printf_emit emit);
 static void debug_print_conv_spec(printf_conv_spec spec);
-static void resolve_numbered_arg_values(const char *format, va_list ap);
+static void debug_print_resolved_args(void);
+static void resolve_numbered_arg_values(const char *format, va_list *ap);
 
 /* function definitions */
-int printf_impl(const char *format, va_list ap, emit_func emit, void *cookie)
+int __printf_impl(const char *format, va_list ap, printf_emit emit)
 {
-	int len;
+	int	len;
+	va_list ap2;
 
-	(void) ap;
-	(void) resolved_numbered_args;
+	va_copy(ap2, ap);
 
 	printf_using_numbered_args = determine_using_numbered_args(format);
 
 	if (printf_using_numbered_args)
 	{
-		errno = ENOSYS;
-		return -1;
-
-		resolve_numbered_arg_values(format, ap);
+		resolve_numbered_arg_values(format, &ap2);
 	}
 
 	len = 0;
@@ -49,14 +46,23 @@ int printf_impl(const char *format, va_list ap, emit_func emit, void *cookie)
 	{
 		if (*format == '%')
 		{
-			format +=
-			    printf_print_conv_spec(format, ap, emit, cookie);
+			format += printf_print_conv_spec(format, &ap2, emit);
 		}
 		else
-			emit(cookie, *format);
+			__emit_char(emit, *format);
 	}
 
+	va_end(ap2);
+
 	return len;
+}
+
+void __printf_repeat(char c, size_t n, printf_emit emit)
+{
+	size_t i;
+
+	for (i = 0; i < n; ++i)
+		emit.emit(emit.cookie, c);
 }
 
 /*
@@ -66,8 +72,7 @@ int printf_impl(const char *format, va_list ap, emit_func emit, void *cookie)
  * RETURN VALUE
  *   The number of characters in the conversion specification
  */
-int printf_print_conv_spec(const char *format, va_list ap, emit_func emit,
-			   void *cookie)
+int printf_print_conv_spec(const char *format, va_list *ap, printf_emit emit)
 {
 	int		 len;
 	printf_conv_spec spec;
@@ -76,19 +81,39 @@ int printf_print_conv_spec(const char *format, va_list ap, emit_func emit,
 	++format;
 
 	len = parse_conv_spec(format, &spec) + 1;
+
+	if (spec.min_field_flags & PRINTF_FLG_PREC_ARG)
+	{
+		if (printf_using_numbered_args)
+			spec.min_field_width =
+			    resolved_numbered_args[spec.min_field_width]
+				.value.si;
+		else
+			spec.min_field_width = va_arg(*ap, int);
+	}
+
+	if (spec.precision_flags & PRINTF_FLG_PREC_ARG)
+	{
+		if (printf_using_numbered_args)
+			spec.precision =
+			    resolved_numbered_args[spec.precision].value.si;
+		else
+			spec.precision = va_arg(*ap, int);
+	}
+
 	switch (spec.conversion_specifier)
 	{
 	case 'c':
-		_printf_char(printf_using_numbered_args, ap,
-			     resolved_numbered_args, spec, emit, cookie);
+		__printf_char(printf_using_numbered_args, ap,
+			      resolved_numbered_args, spec, emit);
 		break;
 	case 's':
-		_printf_char_string(printf_using_numbered_args, ap,
-				    resolved_numbered_args, spec, emit, cookie);
+		__printf_char_string(printf_using_numbered_args, ap,
+				     resolved_numbered_args, spec, emit);
 		break;
 	default:
-		_printf_unimplemented_specifier(spec.conversion_specifier, emit,
-						cookie);
+		__printf_unimplemented_specifier(spec.conversion_specifier,
+						 emit);
 	}
 
 	return len;
@@ -129,10 +154,107 @@ bool determine_using_numbered_args(const char *format)
  * RETURN VALUE
  *   None
  */
-void resolve_numbered_arg_values(const char *format, va_list ap)
+void resolve_numbered_arg_values(const char *format, va_list *ap)
 {
-	(void) format;
-	(void) ap;
+	size_t		     i;
+	printf_conv_spec     spec;
+	printf_resolved_arg *arg;
+
+	memset(resolved_numbered_args, 0,
+	       NL_ARGMAX * sizeof(*resolved_numbered_args));
+
+	for (; (format = strchr(format, '%'));)
+	{
+		++format;
+		parse_conv_spec(format, &spec);
+
+		if (spec.conversion_specifier == '%')
+			continue;
+
+		arg = resolved_numbered_args + spec.argnum;
+
+		arg->used = true;
+
+		arg->type = INT;
+
+		if (strchr("sn", spec.conversion_specifier))
+			arg->type = POINTER;
+
+		else
+		{
+			if (!strcmp(spec.length_modifier, PRINTF_LEN_CHAR))
+				arg->type = CHAR;
+
+			if (!strcmp(spec.length_modifier, PRINTF_LEN_SHORT))
+				arg->type = SHORT;
+
+			if (!strcmp(spec.length_modifier, PRINTF_LEN_LONG))
+				arg->type = LONG;
+
+			if (!strcmp(spec.length_modifier, PRINTF_LEN_LONG_LONG))
+				arg->type = LONGLONG;
+
+			if (!strcmp(spec.length_modifier, PRINTF_LEN_MAX))
+				arg->type = INTMAX;
+
+			if (!strcmp(spec.length_modifier, PRINTF_LEN_SIZE))
+				arg->type = SIZET;
+
+			if (!strcmp(spec.length_modifier, PRINTF_LEN_PTRDIFF))
+				arg->type = PTRDIFF;
+
+			if (strchr("fFeEgGaA", spec.conversion_specifier))
+				arg->type = DOUBLE;
+
+			if (!strcmp(spec.length_modifier,
+				    PRINTF_LEN_LONG_DOUBLE))
+				arg->type = LONGDOUBLE;
+		}
+	}
+
+	for (i = 0; i < NL_ARGMAX; ++i)
+	{
+		arg = resolved_numbered_args + i;
+		if (!arg->used)
+			break;
+
+		switch (arg->type)
+		{
+		case INT:
+			arg->value.si = va_arg(*ap, int);
+			break;
+		case DOUBLE:
+			arg->value.d = va_arg(*ap, double);
+			break;
+		case LONGDOUBLE:
+			arg->value.ld = va_arg(*ap, long double);
+			break;
+		case CHAR:
+			arg->value.sc = (signed char) va_arg(*ap, int);
+			break;
+		case SHORT:
+			arg->value.ss = (short) va_arg(*ap, int);
+			break;
+		case LONG:
+			arg->value.sl = va_arg(*ap, long);
+			break;
+		case LONGLONG:
+			arg->value.sll = va_arg(*ap, long long);
+			break;
+		case INTMAX:
+			arg->value.sim = va_arg(*ap, intmax_t);
+			break;
+		case PTRDIFF:
+			arg->value.pd = va_arg(*ap, ptrdiff_t);
+			break;
+		case SIZET:
+			arg->value.z = va_arg(*ap, size_t);
+			break;
+		case POINTER:
+			arg->value.vp = va_arg(*ap, void *);
+			break;
+		}
+	}
 }
 
 /*
@@ -156,20 +278,23 @@ int parse_conv_spec(const char *str, printf_conv_spec *spec)
 	len			   = srch - str;
 	spec->conversion_specifier = *srch;
 
-	/* parse explicit argument number */
-	for (; isdigit(*str); ++str)
-	{
-		spec->argnum *= 10;
-		spec->argnum += *str - '0';
-	}
+	srch = strchr(str, '$');
 
-	if (*str == '$')
+	if (srch && (srch - str) < len)
 	{
+		/* parse explicit argument number */
+		for (; isdigit(*str); ++str)
+		{
+			spec->argnum *= 10;
+			spec->argnum += *str - '0';
+		}
+
 		/*
-		 * Make argnum 0 based and fit it into range [0,{NL_ARGMAX}-1].
-		 * Posix explicitly says that providing a higher number than
-		 * NL_ARGMAX is undefined behavior, and this ensures we don't
-		 * read out of bounds.
+		 * Make argnum 0 based and fit it into range
+		 * [0,{NL_ARGMAX}-1]. Posix explicitly says that
+		 * providing a higher number than NL_ARGMAX is undefined
+		 * behavior, and this ensures we don't read out of
+		 * bounds.
 		 */
 		--spec->argnum;
 		spec->argnum %= NL_ARGMAX;
@@ -321,5 +446,28 @@ void debug_print_conv_spec(printf_conv_spec spec)
 void debug_print_conv_spec(printf_conv_spec spec)
 {
 	(void) spec;
+}
+#endif
+
+#ifdef DEBUG
+void debug_print_resolved_args(void)
+{
+	size_t i;
+
+	for (i = 0; i < NL_ARGMAX; ++i)
+	{
+		if (!resolved_numbered_args[i].used)
+			continue;
+		puts("ARG\n");
+		puts("  num :");
+		puts(itoa(i));
+		puts("  type: ");
+		puts(itoa(resolved_numbered_args[i].type));
+		puts("\n");
+	}
+}
+#else
+void debug_print_resolved_args(void)
+{
 }
 #endif

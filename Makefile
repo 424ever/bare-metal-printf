@@ -24,6 +24,7 @@ OBJ = $(SRCDIR)/boot.o                                          \
       $(SRCDIR)/string/memcpy.o                                 \
       $(SRCDIR)/string/memset.o                                 \
       $(SRCDIR)/string/strchr.o                                 \
+      $(SRCDIR)/string/strcmp.o                                 \
       $(SRCDIR)/string/strlen.o                                 \
       $(SRCDIR)/string/strpbrk.o                                \
       $(SRCDIR)/term.o                       

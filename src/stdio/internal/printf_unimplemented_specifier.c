@@ -1,19 +1,16 @@
 #include "printf_impl.h"
 
 #ifdef DEBUG
-void _printf_unimplemented_specifier(char specifier, emit_func emit,
-				     void *cookie)
+void __printf_unimplemented_specifier(char specifier, printf_emit emit)
 {
-	emit_string(emit, cookie, "<unimplemented:");
-	emit(cookie, specifier);
-	emit_string(emit, cookie, "> ");
+	__emit_string(emit, "<unimplemented:");
+	emit.emit(emit.cookie, specifier);
+	__emit_string(emit, "> ");
 }
 #else
-void _printf_unimplemented_specifier(char specifier, emit_func emit,
-				     void *cookie)
+void __printf_unimplemented_specifier(char specifier, printf_emit emit)
 {
 	(void) specifier;
 	(void) emit;
-	(void) cookie;
 }
 #endif

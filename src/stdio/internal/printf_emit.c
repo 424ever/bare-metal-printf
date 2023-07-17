@@ -4,13 +4,13 @@
 
 #include "printf_impl.h"
 
-void emit_putchar(void *cookie, char c)
+void __putchar_emit(void *cookie, char c)
 {
-	(void)cookie;
+	(void) cookie;
 	putchar(c);
 }
 
-void emit_string(emit_func emit, void *cookie, const char *str)
+void __emit_string(printf_emit emit, const char *str)
 {
 	size_t i;
 	size_t len;
@@ -18,6 +18,10 @@ void emit_string(emit_func emit, void *cookie, const char *str)
 	len = strlen(str);
 
 	for (i = 0; i < len; ++i)
-		emit(cookie, str[i]);
+		emit.emit(emit.cookie, str[i]);
 }
 
+void __emit_char(printf_emit emit, char c)
+{
+	emit.emit(emit.cookie, c);
+}
