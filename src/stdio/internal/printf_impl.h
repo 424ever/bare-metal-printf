@@ -104,7 +104,8 @@ typedef struct _sprintf_cookie
 {
 	bool   limited;
 	size_t remaining;
-	char  *pos;
+	size_t i;
+	char  *base;
 } sprintf_cookie;
 
 int  __printf_impl(const char *format, va_list ap, printf_emit emit);
