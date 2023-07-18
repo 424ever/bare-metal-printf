@@ -24,6 +24,9 @@ static int printf_print_conv_spec(const char *format, va_list *ap,
 static void debug_print_conv_spec(printf_conv_spec spec);
 static void debug_print_resolved_args(void);
 static void resolve_numbered_arg_values(const char *format, va_list *ap);
+static printf_resolved_arg_type get_type_for(printf_conv_spec spec);
+static void pop_arg_of_type(printf_resolved_arg_type type, va_list *ap,
+			    printf_arg_value *value);
 
 /* function definitions */
 int __printf_impl(const char *format, va_list ap, printf_emit emit)
@@ -74,8 +77,10 @@ void __printf_repeat(char c, size_t n, printf_emit emit)
  */
 int printf_print_conv_spec(const char *format, va_list *ap, printf_emit emit)
 {
-	int		 len;
-	printf_conv_spec spec;
+	int			 len;
+	printf_conv_spec	 spec;
+	printf_arg_value	 value;
+	printf_resolved_arg_type type;
 
 	/* parse_conv_spec expects to start after the % */
 	++format;
@@ -101,15 +106,21 @@ int printf_print_conv_spec(const char *format, va_list *ap, printf_emit emit)
 			spec.precision = va_arg(*ap, int);
 	}
 
+	if (printf_using_numbered_args)
+		value = resolved_numbered_args[spec.argnum].value;
+	else
+	{
+		type = get_type_for(spec);
+		pop_arg_of_type(type, ap, &value);
+	}
+
 	switch (spec.conversion_specifier)
 	{
 	case 'c':
-		__printf_char(printf_using_numbered_args, ap,
-			      resolved_numbered_args, spec, emit);
+		__printf_char(spec, value, emit);
 		break;
 	case 's':
-		__printf_char_string(printf_using_numbered_args, ap,
-				     resolved_numbered_args, spec, emit);
+		__printf_char_string(spec, value, emit);
 		break;
 	default:
 		__printf_unimplemented_specifier(spec.conversion_specifier,
@@ -148,6 +159,87 @@ bool determine_using_numbered_args(const char *format)
 	return false;
 }
 
+printf_resolved_arg_type get_type_for(printf_conv_spec spec)
+{
+	printf_resolved_arg_type type;
+
+	type = INT;
+	if (strchr("sn", spec.conversion_specifier))
+		type = POINTER;
+
+	else
+	{
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_CHAR))
+			type = CHAR;
+
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_SHORT))
+			type = SHORT;
+
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_LONG))
+			type = LONG;
+
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_LONG_LONG))
+			type = LONGLONG;
+
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_MAX))
+			type = INTMAX;
+
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_SIZE))
+			type = SIZET;
+
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_PTRDIFF))
+			type = PTRDIFF;
+
+		if (strchr("fFeEgGaA", spec.conversion_specifier))
+			type = DOUBLE;
+
+		if (!strcmp(spec.length_modifier, PRINTF_LEN_LONG_DOUBLE))
+			type = LONGDOUBLE;
+	}
+	return type;
+}
+
+void pop_arg_of_type(printf_resolved_arg_type type, va_list *ap,
+		     printf_arg_value *value)
+{
+	switch (type)
+	{
+	case INT:
+		value->si = va_arg(*ap, int);
+		break;
+	case DOUBLE:
+		value->d = va_arg(*ap, double);
+		break;
+	case LONGDOUBLE:
+		value->ld = va_arg(*ap, long double);
+		break;
+	case CHAR:
+		value->sc = (signed char) va_arg(*ap, int);
+		break;
+	case SHORT:
+		value->ss = (short) va_arg(*ap, int);
+		break;
+	case LONG:
+		value->sl = va_arg(*ap, long);
+		break;
+	case LONGLONG:
+		value->sll = va_arg(*ap, long long);
+		break;
+	case INTMAX:
+		value->sim = va_arg(*ap, intmax_t);
+		break;
+	case PTRDIFF:
+		value->pd = va_arg(*ap, ptrdiff_t);
+		break;
+	case SIZET:
+		value->z = va_arg(*ap, size_t);
+		break;
+	case POINTER:
+		value->vp = va_arg(*ap, void *);
+		break;
+	}
+}
+
 /*
  * DESCRIPTION
  *   Resolves the values of numbered arguments
@@ -175,41 +267,7 @@ void resolve_numbered_arg_values(const char *format, va_list *ap)
 
 		arg->used = true;
 
-		arg->type = INT;
-
-		if (strchr("sn", spec.conversion_specifier))
-			arg->type = POINTER;
-
-		else
-		{
-			if (!strcmp(spec.length_modifier, PRINTF_LEN_CHAR))
-				arg->type = CHAR;
-
-			if (!strcmp(spec.length_modifier, PRINTF_LEN_SHORT))
-				arg->type = SHORT;
-
-			if (!strcmp(spec.length_modifier, PRINTF_LEN_LONG))
-				arg->type = LONG;
-
-			if (!strcmp(spec.length_modifier, PRINTF_LEN_LONG_LONG))
-				arg->type = LONGLONG;
-
-			if (!strcmp(spec.length_modifier, PRINTF_LEN_MAX))
-				arg->type = INTMAX;
-
-			if (!strcmp(spec.length_modifier, PRINTF_LEN_SIZE))
-				arg->type = SIZET;
-
-			if (!strcmp(spec.length_modifier, PRINTF_LEN_PTRDIFF))
-				arg->type = PTRDIFF;
-
-			if (strchr("fFeEgGaA", spec.conversion_specifier))
-				arg->type = DOUBLE;
-
-			if (!strcmp(spec.length_modifier,
-				    PRINTF_LEN_LONG_DOUBLE))
-				arg->type = LONGDOUBLE;
-		}
+		arg->type = get_type_for(spec);
 	}
 
 	for (i = 0; i < NL_ARGMAX; ++i)
@@ -218,42 +276,7 @@ void resolve_numbered_arg_values(const char *format, va_list *ap)
 		if (!arg->used)
 			break;
 
-		switch (arg->type)
-		{
-		case INT:
-			arg->value.si = va_arg(*ap, int);
-			break;
-		case DOUBLE:
-			arg->value.d = va_arg(*ap, double);
-			break;
-		case LONGDOUBLE:
-			arg->value.ld = va_arg(*ap, long double);
-			break;
-		case CHAR:
-			arg->value.sc = (signed char) va_arg(*ap, int);
-			break;
-		case SHORT:
-			arg->value.ss = (short) va_arg(*ap, int);
-			break;
-		case LONG:
-			arg->value.sl = va_arg(*ap, long);
-			break;
-		case LONGLONG:
-			arg->value.sll = va_arg(*ap, long long);
-			break;
-		case INTMAX:
-			arg->value.sim = va_arg(*ap, intmax_t);
-			break;
-		case PTRDIFF:
-			arg->value.pd = va_arg(*ap, ptrdiff_t);
-			break;
-		case SIZET:
-			arg->value.z = va_arg(*ap, size_t);
-			break;
-		case POINTER:
-			arg->value.vp = va_arg(*ap, void *);
-			break;
-		}
+		pop_arg_of_type(arg->type, ap, &arg->value);
 	}
 }
 
@@ -322,7 +345,7 @@ int parse_conv_spec(const char *str, printf_conv_spec *spec)
 		    parse_width(str, &spec->precision, &spec->precision_flags);
 	}
 
-	/* parse lenght modifier */
+	/* parse length modifier */
 	srch = strpbrk(str, PRINTF_CONV_SPEC_CHARS);
 	for (i = 0; i < 2 && str + i != srch; ++i)
 		spec->length_modifier[i] = str[i];

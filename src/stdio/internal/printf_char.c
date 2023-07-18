@@ -4,8 +4,8 @@
 #include "printf_impl.h"
 #include "stdlib.h"
 
-void __printf_char(bool numbered_args, va_list *ap, printf_resolved_arg *args,
-		   printf_conv_spec spec, printf_emit emit)
+void __printf_char(printf_conv_spec spec, printf_arg_value value,
+		   printf_emit emit)
 {
 	unsigned char c;
 	size_t	      pad;
@@ -13,10 +13,7 @@ void __printf_char(bool numbered_args, va_list *ap, printf_resolved_arg *args,
 	c   = 0;
 	pad = 0;
 
-	if (!numbered_args)
-		c = (unsigned char) va_arg(*ap, int);
-	else
-		c = (unsigned char) args[spec.argnum].value.si;
+	c = (unsigned char) value.si;
 
 	if (spec.min_field_width > 0)
 		pad = spec.min_field_width - 1;

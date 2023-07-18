@@ -5,8 +5,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-void __printf_char_string(bool numbered_args, va_list *ap,
-			  printf_resolved_arg *args, printf_conv_spec spec,
+void __printf_char_string(printf_conv_spec spec, printf_arg_value value,
 			  printf_emit emit)
 {
 	char  *str;
@@ -16,10 +15,7 @@ void __printf_char_string(bool numbered_args, va_list *ap,
 	str = NULL;
 	pad = 0;
 
-	if (!numbered_args)
-		str = va_arg(*ap, char *);
-	else
-		str = args[spec.argnum].value.cp;
+	str = value.cp;
 
 	if (spec.precision_flags & PRINTF_FLG_PREC_EXPL)
 	{

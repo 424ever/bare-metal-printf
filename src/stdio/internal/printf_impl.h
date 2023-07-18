@@ -120,10 +120,9 @@ void __emit_char(printf_emit emit, char c);
 void __emit_string(printf_emit emit, const char *str);
 
 /* output functions */
-void __printf_char(bool numbered_args, va_list *ap, printf_resolved_arg *args,
-		   printf_conv_spec spec, printf_emit emit);
-void __printf_char_string(bool numbered_args, va_list *ap,
-			  printf_resolved_arg *args, printf_conv_spec spec,
+void __printf_char(printf_conv_spec spec, printf_arg_value value,
+		   printf_emit emit);
+void __printf_char_string(printf_conv_spec spec, printf_arg_value value,
 			  printf_emit emit);
 void __printf_unimplemented_specifier(char specifier, printf_emit emit);
 
