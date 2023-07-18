@@ -100,12 +100,19 @@ typedef struct _printf_emit
 	emit_func emit;
 	void	 *cookie;
 } printf_emit;
+typedef struct _sprintf_cookie
+{
+	bool   limited;
+	size_t remaining;
+	char  *pos;
+} sprintf_cookie;
 
 int  __printf_impl(const char *format, va_list ap, printf_emit emit);
 void __printf_repeat(char c, size_t n, printf_emit emit);
 
 /* default emit functions */
 void __putchar_emit(void *cookie, char c);
+void __strappend_emit(void *cookie, char c);
 
 /* emit helpers */
 void __emit_char(printf_emit emit, char c);

@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../stdio_internal.h"
 #include "printf_impl.h"
-#include "stdio/stdio_internal.h"
 
 /* global data */
 static printf_resolved_arg resolved_numbered_args[NL_ARGMAX];

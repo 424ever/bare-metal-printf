@@ -1,5 +1,5 @@
-#ifndef _ERRNO_H_
-#define _ERRNO_H_
+#ifndef __ERRNO_H_
+#define __ERRNO_H_
 
 int *__errno_location(void);
 #define errno *__errno_location()

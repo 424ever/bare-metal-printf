@@ -1,7 +1,7 @@
 #include <stddef.h>
 
-#ifndef _TERM_H_
-#	define _TERM_H_
+#ifndef __TERM_H_
+#	define __TERM_H_
 
 enum vga_color
 {
@@ -24,11 +24,11 @@ enum vga_color
 };
 
 uint8_t vga_color(enum vga_color fg, enum vga_color bg);
+int	terminal_is_initialized(void);
 void	terminal_initialize(void);
 void	terminal_setcolor(uint8_t color);
 void	terminal_putentryat(char c, uint8_t color, int x, int y);
 void	terminal_putchar(char c);
 void	terminal_write(const char *data, size_t len);
-void	terminal_scroll(void);
 
 #endif

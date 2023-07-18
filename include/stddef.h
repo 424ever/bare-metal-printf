@@ -1,5 +1,5 @@
-#ifndef _STDDEF_H_
-#define _STDDEF_H_
+#ifndef __STDDEF_H_
+#define __STDDEF_H_
 
 #define NULL 0
 
@@ -9,6 +9,7 @@ typedef signed short int   int16_t;
 typedef unsigned short int uint16_t;
 typedef signed int	   int32_t;
 typedef unsigned int	   uint32_t;
+typedef int		   intptr_t;
 #if __WORDSIZE == 64
 typedef signed long int	  int64_t;
 typedef unsigned long int uint64_t;

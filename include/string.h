@@ -1,7 +1,7 @@
 #include <stddef.h>
 
-#ifndef _STRING_H_
-#	define _STRING_H_
+#ifndef __STRING_H_
+#	define __STRING_H_
 
 int    strcmp(const char *s1, const char *s2);
 char  *strchr(const char *s, int c);
