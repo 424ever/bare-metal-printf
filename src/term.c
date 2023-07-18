@@ -8,6 +8,7 @@
 #define VGA_HEIGHT 25
 #define VGA_ORIGIN 0xB8000;
 
+static int	 terminal_initialized = 0;
 static int	 terminal_col;
 static int	 terminal_row;
 static uint16_t *terminal_buffer;
@@ -23,7 +24,7 @@ static uint16_t vga_entry(unsigned char uc, uint8_t color)
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
 
-void terminal_scroll(void)
+static void terminal_scroll(void)
 {
 	size_t i;
 	size_t row_len;
@@ -68,6 +69,8 @@ void terminal_initialize(void)
 			terminal_buffer[y * VGA_WIDTH + x] =
 			    vga_entry(' ', terminal_color);
 	}
+
+	terminal_initialized = 1;
 }
 
 void terminal_setcolor(uint8_t color)
@@ -98,4 +101,9 @@ void terminal_write(const char *data, size_t len)
 
 	for (i = 0; i < len; ++i)
 		terminal_putchar(data[i]);
+}
+
+int terminal_is_initialized(void)
+{
+	return terminal_initialized;
 }
