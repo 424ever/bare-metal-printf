@@ -10,13 +10,15 @@ CFLAGS += -std=c99 -ffreestanding -O2 -Wall -Wextra -Werror -Wno-unused-function
 
 OBJ = $(OBJDIR)/boot.o                                          \
       $(OBJDIR)/ctype/isdigit.o                                 \
-      $(OBJDIR)/errno/__errno_location.o                        \
+      $(OBJDIR)/errno/errno_location.o                          \
       $(OBJDIR)/kernel_main.o                                   \
       $(OBJDIR)/stdio/internal/init.o                           \
       $(OBJDIR)/stdio/internal/printf_char.o                    \
       $(OBJDIR)/stdio/internal/printf_char_string.o             \
+      $(OBJDIR)/stdio/internal/printf_decimal.o                 \
       $(OBJDIR)/stdio/internal/printf_emit.o                    \
       $(OBJDIR)/stdio/internal/printf_impl.o                    \
+      $(OBJDIR)/stdio/internal/printf_num.o                     \
       $(OBJDIR)/stdio/internal/printf_unimplemented_specifier.o \
       $(OBJDIR)/stdio/printf.o                                  \
       $(OBJDIR)/stdio/putchar.o                                 \
@@ -51,7 +53,7 @@ image: $(KERNEL) $(GRUBDIR)/grub.cfg
 kernel: $(KERNEL)
 
 $(KERNEL): $(OBJ) $(GRUBDIR)
-	$(CC) -T linker.ld -o $@ -ffreestanding -nostdlib $(OBJ)
+	$(CC) -T linker.ld -o $@ -ffreestanding -nostdlib $(OBJ) -lgcc
 
 $(GRUBDIR):
 	mkdir -p $@

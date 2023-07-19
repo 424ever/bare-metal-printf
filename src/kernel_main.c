@@ -7,7 +7,5 @@
 
 void _kernel_main(void)
 {
-	char test[100];
-	snprintf(test, 100, "%98cabcd", '@');
-	puts(test);
+	printf("Hello, %3$+7.5d%2$s%1$c%%", '!', "world", 42);
 }

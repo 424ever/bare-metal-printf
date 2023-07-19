@@ -10,6 +10,7 @@ void __printf_char_string(printf_conv_spec spec, printf_arg_value value,
 {
 	char  *str;
 	size_t pad;
+	int    len;
 	char   org_replaced_char;
 
 	str = NULL;
@@ -23,8 +24,9 @@ void __printf_char_string(printf_conv_spec spec, printf_arg_value value,
 		str[spec.precision] = '\0';
 	}
 
-	if (spec.min_field_width > 0)
-		pad = spec.min_field_width - strlen(str);
+	len = strlen(str);
+	if (spec.min_field_width > len)
+		pad = spec.min_field_width - len;
 
 	if (spec.flags & PRINTF_FLG_LEFT_JUST)
 	{

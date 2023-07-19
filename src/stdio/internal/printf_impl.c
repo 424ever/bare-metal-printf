@@ -116,11 +116,18 @@ int printf_print_conv_spec(const char *format, va_list *ap, printf_emit emit)
 
 	switch (spec.conversion_specifier)
 	{
+	case 'd':
+	case 'i':
+		__printf_decimal(spec, value, emit);
+		break;
 	case 'c':
 		__printf_char(spec, value, emit);
 		break;
 	case 's':
 		__printf_char_string(spec, value, emit);
+		break;
+	case '%':
+		__emit_char(emit, '%');
 		break;
 	default:
 		__printf_unimplemented_specifier(spec.conversion_specifier,

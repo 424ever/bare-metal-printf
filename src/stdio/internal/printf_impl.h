@@ -110,6 +110,10 @@ typedef struct _sprintf_cookie
 
 int  __printf_impl(const char *format, va_list ap, printf_emit emit);
 void __printf_repeat(char c, size_t n, printf_emit emit);
+void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
+			  printf_emit emit);
+void __printf_print_num_u(uintmax_t n, int base, printf_conv_spec spec,
+			  bool uppercase_hex, printf_emit emit);
 
 /* default emit functions */
 void __putchar_emit(void *cookie, char c);
@@ -124,6 +128,8 @@ void __printf_char(printf_conv_spec spec, printf_arg_value value,
 		   printf_emit emit);
 void __printf_char_string(printf_conv_spec spec, printf_arg_value value,
 			  printf_emit emit);
+void __printf_decimal(printf_conv_spec spec, printf_arg_value value,
+		      printf_emit emit);
 void __printf_unimplemented_specifier(char specifier, printf_emit emit);
 
 #endif
