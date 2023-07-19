@@ -13,5 +13,7 @@ int puts(const char *s)
 	len = strlen(s);
 	terminal_write(s, len);
 
+	terminal_putchar('\n');
+
 	return 1;
 }
