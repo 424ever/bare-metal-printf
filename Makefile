@@ -6,7 +6,7 @@ CC = i686-elf-gcc
 KERNEL = $(ISODIR)/boot/printf.bin
 ISO = printf.iso
 
-CFLAGS += -std=c99 -ffreestanding -O2 -Wall -Wextra -Werror -Wno-unused-function -Iinclude -pedantic-errors -DDEBUG
+CFLAGS += -std=c99 -ffreestanding -O2 -Wall -Wextra -Werror -Iinclude -pedantic-errors -DDEBUG
 
 OBJ = $(OBJDIR)/boot.o                                          \
       $(OBJDIR)/ctype/isdigit.o                                 \

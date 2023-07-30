@@ -21,8 +21,6 @@ static int  parse_conv_spec(const char *str, printf_conv_spec *spec);
 static int parse_width(const char *str, int *width, printf_prec_flags_t *flags);
 static int printf_print_conv_spec(const char *format, va_list *ap,
 				  printf_emit emit);
-static void debug_print_conv_spec(printf_conv_spec spec);
-static void debug_print_resolved_args(void);
 static void resolve_numbered_arg_values(const char *format, va_list *ap);
 static printf_resolved_arg_type get_type_for(printf_conv_spec spec);
 static void pop_arg_of_type(printf_resolved_arg_type type, va_list *ap,
@@ -418,86 +416,3 @@ int parse_width(const char *str, int *width, printf_prec_flags_t *flags)
 
 	return len;
 }
-
-/*
- * DESCRIPTION
- *   Print textual information about a spec using only puts and putchar.
- */
-#ifdef DEBUG
-void debug_print_conv_spec(printf_conv_spec spec)
-{
-	puts("SPEC\n");
-
-	puts("  argnum: ");
-	puts(itoa(spec.argnum));
-	putchar('\n');
-	puts("  flags: ");
-	if (spec.flags & PRINTF_FLG_TSND_GRP)
-		puts("' ");
-	if (spec.flags & PRINTF_FLG_LEFT_JUST)
-		puts("- ");
-	if (spec.flags & PRINTF_FLG_ALWAYS_SIGN)
-		puts("+ ");
-	if (spec.flags & PRINTF_FLG_SPACE_SIGN)
-		puts("<space> ");
-	if (spec.flags & PRINTF_FLG_HASH)
-		puts("# ");
-	if (spec.flags & PRINTF_FLG_ZERO)
-		puts("0 ");
-	putchar('\n');
-
-	puts("  min field width: ");
-	puts(itoa(spec.min_field_width));
-	puts("( ");
-	if (spec.min_field_flags & PRINTF_FLG_PREC_EXPL)
-		puts("explicit ");
-	if (spec.min_field_flags & PRINTF_FLG_PREC_ARG)
-		puts("argument ");
-	puts(" )\n");
-
-	puts("  precision: ");
-	puts(itoa(spec.precision));
-	puts("( ");
-	if (spec.precision_flags & PRINTF_FLG_PREC_EXPL)
-		puts("explicit ");
-	if (spec.precision_flags & PRINTF_FLG_PREC_ARG)
-		puts("argument ");
-	puts(")\n");
-
-	puts("  length modifier: ");
-	puts(spec.length_modifier);
-	putchar('\n');
-
-	puts("  conversion specifier: '");
-	putchar(spec.conversion_specifier);
-	puts("'\n");
-}
-#else
-void debug_print_conv_spec(printf_conv_spec spec)
-{
-	(void) spec;
-}
-#endif
-
-#ifdef DEBUG
-void debug_print_resolved_args(void)
-{
-	size_t i;
-
-	for (i = 0; i < NL_ARGMAX; ++i)
-	{
-		if (!resolved_numbered_args[i].used)
-			continue;
-		puts("ARG\n");
-		puts("  num :");
-		puts(itoa(i));
-		puts("  type: ");
-		puts(itoa(resolved_numbered_args[i].type));
-		puts("\n");
-	}
-}
-#else
-void debug_print_resolved_args(void)
-{
-}
-#endif
