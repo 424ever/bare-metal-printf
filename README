@@ -8,7 +8,7 @@ Dependencies
 
   - make
   - a i686-elf-gcc in your $PATH
-  - grub2 (for creating a bootable image)
+  - grub(2) (for creating a bootable image)
 
 
 Building
@@ -21,6 +21,9 @@ Building
      $ make image
     or
      $ make
+
+  - If your grub utils start with grub- instead of grub2-, add the following:
+     $ make GRUB_PREFIX=grub ...
 
 Running tests
 -------------

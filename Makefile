@@ -5,6 +5,7 @@ GRUBDIR = isodir/boot/grub
 CC = i686-elf-gcc
 KERNEL = $(ISODIR)/boot/printf.bin
 ISO = printf.iso
+GRUB_PREFIX ?= grub2
 
 CFLAGS += -std=c99 -ffreestanding -O2 -Wall -Wextra -Werror -Iinclude -pedantic-errors -DDEBUG
 
@@ -47,8 +48,8 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.S
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 image: $(KERNEL) $(GRUBDIR)/grub.cfg
-	grub2-file --is-x86-multiboot $(KERNEL)
-	grub2-mkrescue -o $(ISO) isodir
+	$(GRUB_PREFIX)-file --is-x86-multiboot $(KERNEL)
+	$(GRUB_PREFIX)-mkrescue -o $(ISO) isodir
 
 kernel: $(KERNEL)
 
