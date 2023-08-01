@@ -23,8 +23,10 @@ void printf_test(const char *name, const char *expected, const char *format,
 	if (strcmp(buffer, expected) != 0)
 	{
 		++failcount;
-		printf("'%s' failed\n  expected '%s'\n  got      '%s'\n", name,
-		       expected, buffer);
+		if (strpbrk(buffer, "<unimplemented") == NULL)
+			printf(
+			    "'%s' failed\n  expected '%s'\n  got      '%s'\n",
+			    name, expected, buffer);
 	}
 }
 
