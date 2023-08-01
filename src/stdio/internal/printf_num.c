@@ -98,6 +98,8 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 				emit.emit(emit.cookie, '-');
 			else if (spec.flags & PRINTF_FLG_ALWAYS_SIGN)
 				emit.emit(emit.cookie, '+');
+			else if (spec.flags & PRINTF_FLG_SPACE_SIGN)
+				emit.emit(emit.cookie, ' ');
 
 			__printf_repeat(pad_char, pad, emit);
 		}
@@ -109,6 +111,8 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 				emit.emit(emit.cookie, '-');
 			else if (spec.flags & PRINTF_FLG_ALWAYS_SIGN)
 				emit.emit(emit.cookie, '+');
+			else if (spec.flags & PRINTF_FLG_SPACE_SIGN)
+				emit.emit(emit.cookie, ' ');
 		}
 		__emit_string(emit, end);
 	}
