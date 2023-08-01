@@ -20,11 +20,7 @@ void printf_test(const char *name, const char *expected, const char *format,
 	vsnprintf(buffer, 100, format, ap);
 	va_end(ap);
 
-	if (strcmp(buffer, expected) == 0)
-	{
-		printf("'%s' passed\n", name);
-	}
-	else
+	if (strcmp(buffer, expected) != 0)
 	{
 		++failcount;
 		printf("'%s' failed\n  expected '%s'\n  got      '%s'\n", name,

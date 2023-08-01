@@ -94,10 +94,6 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 			pad_char = '0';
 	}
 
-	puts("pad char");
-	putchar(pad_char);
-	putchar('\n');
-
 	if (pad_left)
 	{
 		if (sign_before_pad)
