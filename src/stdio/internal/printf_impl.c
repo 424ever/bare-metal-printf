@@ -380,6 +380,12 @@ int parse_conv_spec(const char *str, printf_conv_spec *spec)
 		spec->length_modifier[1]   = '\0';
 	}
 
+	/* For d, i, o, u, x, and X conversion specifiers, if a precision is
+	 * specified, the '0' flag shall be ignored. */
+	if (strchr("diouxX", spec->conversion_specifier) != NULL &&
+	    spec->precision_flags & PRINTF_FLG_PREC_EXPL)
+		spec->flags &= ~PRINTF_FLG_ZERO;
+
 	return len;
 }
 
