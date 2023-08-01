@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -90,7 +91,7 @@ void terminal_putchar(char c)
 	}
 }
 
-int terminal_is_initialized(void)
+bool terminal_is_initialized(void)
 {
 	return terminal_initialized;
 }

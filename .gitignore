@@ -1,5 +1,6 @@
 isodir
 obj/
+gen/
 src/**/*.o
 printf.iso
-
+printf-tests.txt

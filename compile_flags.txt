@@ -6,3 +6,4 @@
 -Iinclude
 -pedantic-errors
 -DDEBUG
+-Wno-unused-function

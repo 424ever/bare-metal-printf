@@ -1,4 +1,6 @@
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "printf_impl.h"
@@ -12,6 +14,20 @@ static const char hex_digits[2][16] = {{'0', '1', '2', '3', '4', '5', '6', '7',
 					'F'}};
 
 static char num_buffer[__NUM_BUFFER_SIZE];
+
+static void add_digits_with_maybe_thousands_grouping(char **end, int *numdigits,
+						     printf_conv_spec spec,
+						     int mod, int uppercase)
+{
+	--(*end);
+	**end = hex_digits[uppercase][mod];
+	++*numdigits;
+	if (*numdigits % 3 == 0 && spec.flags & PRINTF_FLG_TSND_GRP)
+	{
+		--(*end);
+		**end = ',';
+	}
+}
 
 void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 			  printf_emit emit)
@@ -32,6 +48,7 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 	pad_left			  = true;
 	pad_char			  = ' ';
 	numdigits			  = 0;
+	pad				  = 0;
 
 	if (base > 16)
 		base = 16;
@@ -39,22 +56,30 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 	if (n < 0)
 		negative = true;
 
+	if (n == 0)
+	{
+		--end;
+		*end = '0';
+		++numdigits;
+	}
 	for (; n != 0;)
 	{
 		mod = n % base;
 		n /= 10;
 		if (negative)
 			mod = base - mod;
-		--end;
-		*end = hex_digits[0][mod];
-		++numdigits;
+		add_digits_with_maybe_thousands_grouping(&end, &numdigits, spec,
+							 mod, 0);
 	}
 
 	for (; numdigits < spec.precision; ++numdigits)
 		*(--end) = '0';
 
-	pad = spec.min_field_width - strlen(end) -
-	      (negative || spec.flags & PRINTF_FLG_ALWAYS_SIGN ? 1 : 0);
+	if (spec.min_field_width > 0)
+		pad = spec.min_field_width - strlen(end) -
+		      (negative || spec.flags & PRINTF_FLG_ALWAYS_SIGN ? 1 : 0);
+	if (pad < 0)
+		pad = 0;
 
 	if (spec.flags & PRINTF_FLG_LEFT_JUST)
 		pad_left = false;
@@ -94,5 +119,7 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 		else if (spec.flags & PRINTF_FLG_ALWAYS_SIGN)
 			emit.emit(emit.cookie, '+');
 		__emit_string(emit, end);
+
+		__printf_repeat(pad_char, pad, emit);
 	}
 }

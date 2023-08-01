@@ -7,6 +7,7 @@ Dependencies
 ------------
 
   - make
+  - wget
   - a i686-elf-gcc in your $PATH
   - grub(2) (for creating a bootable image)
 
@@ -31,4 +32,4 @@ Building
 Running tests
 -------------
 
-  - lol
+  - run by the default `kernel_main.c`
