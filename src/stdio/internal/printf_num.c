@@ -90,8 +90,13 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 	if (spec.flags & PRINTF_FLG_ZERO)
 	{
 		sign_before_pad = true;
-		pad_char	= '0';
+		if (!(spec.flags & PRINTF_FLG_LEFT_JUST))
+			pad_char = '0';
 	}
+
+	puts("pad char");
+	putchar(pad_char);
+	putchar('\n');
 
 	if (pad_left)
 	{
