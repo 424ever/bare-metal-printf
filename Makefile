@@ -6,12 +6,15 @@ CC = i686-elf-gcc
 KERNEL = $(ISODIR)/boot/printf.bin
 ISO = printf.iso
 GRUB_PREFIX ?= grub2
+CONSOLE ?= vga
 
-CFLAGS += -std=c99 -ffreestanding -O2 -Wall -Wextra -Werror -Iinclude -pedantic-errors -DDEBUG
+CFLAGS += -ffreestanding -O2 -Wall -Wextra -Werror -Iinclude -pedantic-errors -DDEBUG
 
 OBJ = $(OBJDIR)/boot.o                                          \
       $(OBJDIR)/ctype/isdigit.o                                 \
       $(OBJDIR)/errno/errno_location.o                          \
+      $(OBJDIR)/io/inb.o                                        \
+      $(OBJDIR)/io/outb.o                                       \
       $(OBJDIR)/kernel_main.o                                   \
       $(OBJDIR)/stdio/internal/init.o                           \
       $(OBJDIR)/stdio/internal/printf_char.o                    \
@@ -33,7 +36,8 @@ OBJ = $(OBJDIR)/boot.o                                          \
       $(OBJDIR)/string/strcmp.o                                 \
       $(OBJDIR)/string/strlen.o                                 \
       $(OBJDIR)/string/strpbrk.o                                \
-      $(OBJDIR)/term.o                       
+      $(OBJDIR)/term/$(CONSOLE)/term.o                          \
+      $(OBJDIR)/term/term_common.o                              
 
 .PHONY: image kernel $(ISO) clean
 

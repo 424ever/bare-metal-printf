@@ -14,14 +14,14 @@ static int	 terminal_row;
 static uint16_t *terminal_buffer;
 static uint8_t	 terminal_color;
 
-uint8_t vga_color(enum vga_color fg, enum vga_color bg)
-{
-	return fg | bg << 4;
-}
-
 static uint16_t vga_entry(unsigned char uc, uint8_t color)
 {
 	return (uint16_t) uc | (uint16_t) color << 8;
+}
+
+static void terminal_putentryat(char c, uint8_t color, int x, int y)
+{
+	terminal_buffer[y * VGA_WIDTH + x] = vga_entry(c, color);
 }
 
 static void terminal_scroll(void)
@@ -78,11 +78,6 @@ void terminal_setcolor(uint8_t color)
 	terminal_color = color;
 }
 
-void terminal_putentryat(char c, uint8_t color, int x, int y)
-{
-	terminal_buffer[y * VGA_WIDTH + x] = vga_entry(c, color);
-}
-
 void terminal_putchar(char c)
 {
 	if (c == '\n')
@@ -93,14 +88,6 @@ void terminal_putchar(char c)
 				    terminal_row);
 		terminal_forward();
 	}
-}
-
-void terminal_write(const char *data, size_t len)
-{
-	size_t i;
-
-	for (i = 0; i < len; ++i)
-		terminal_putchar(data[i]);
 }
 
 int terminal_is_initialized(void)

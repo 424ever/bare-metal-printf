@@ -22,6 +22,9 @@ Building
     or
      $ make
 
+  - You can switch between VGA and Serial output on the COM1 Port by setting
+    CONSOLE to either `vga` or `serial`. Default is `vga`.
+
   - If your grub utils start with grub- instead of grub2-, add the following:
      $ make GRUB_PREFIX=grub ...
 
