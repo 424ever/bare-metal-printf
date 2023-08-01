@@ -67,7 +67,7 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 		mod = n % base;
 		n /= 10;
 		if (negative)
-			mod = base - mod;
+			mod = 16 - mod;
 		add_digits_with_maybe_thousands_grouping(&end, &numdigits, spec,
 							 mod, 0);
 	}
@@ -77,7 +77,10 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 
 	if (spec.min_field_width > 0)
 		pad = spec.min_field_width - strlen(end) -
-		      (negative || spec.flags & PRINTF_FLG_ALWAYS_SIGN ? 1 : 0);
+		      (negative || spec.flags & PRINTF_FLG_ALWAYS_SIGN ||
+			       spec.flags & PRINTF_FLG_SPACE_SIGN
+			   ? 1
+			   : 0);
 	if (pad < 0)
 		pad = 0;
 
