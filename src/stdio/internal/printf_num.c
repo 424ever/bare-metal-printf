@@ -56,7 +56,7 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 	if (n < 0)
 		negative = true;
 
-	if (n == 0)
+	if (n == 0 && spec.precision > 0)
 	{
 		--end;
 		*end = '0';
