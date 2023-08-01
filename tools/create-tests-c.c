@@ -21,8 +21,10 @@ int main(int argc, char **argv)
 	int   n;
 	char  expect[1000];
 	char  format[1000];
+	char  arg[1000];
 	FILE *in;
 	FILE *out;
+
 	if (argc != 3)
 		return 1;
 
@@ -39,16 +41,34 @@ int main(int argc, char **argv)
 	{
 		if (buf[0] == '#' || buf[0] == '!' || buf[0] == '\n')
 			continue;
+		if (sscanf(buf, "%d \"%[^\"]\" \"%[^\"]\" %n", &num, expect,
+			   format, &n) != 3)
+			continue;
 		fputs("  printf_test(", out);
-		sscanf(buf, "%d \"%[^\"]\" \"%[^\"]\" %n", &num, expect, format,
-		       &n);
 		fprintf(out, "\"%d\", \"%s\", \"%s\"", num, expect, format);
-		ptr = strtok(buf + n, " ");
+
+		ptr = buf + n;
+		for (; isspace(*ptr); ++ptr)
+			;
 		while (ptr != NULL)
 		{
-			rtrim(ptr);
-			fprintf(out, ", %s", ptr);
-			ptr = strtok(NULL, " ");
+			if (sscanf(ptr, " \"%[^\"]\"%n ", arg, &n) > 0)
+			{
+				fprintf(out, ", \"%s\"", arg);
+				ptr += n;
+			}
+			else if (sscanf(ptr, " '%[^']'%n ", arg, &n) > 0)
+			{
+				fprintf(out, ", '%s'", arg);
+				ptr += n;
+			}
+			else if (sscanf(ptr, " %s%n ", arg, &n) > 0)
+			{
+				fprintf(out, ", %s", arg);
+				ptr += n;
+			}
+			else
+				ptr = NULL;
 		}
 
 		fputs(");\n", out);

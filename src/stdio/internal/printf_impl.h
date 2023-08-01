@@ -114,6 +114,9 @@ void __printf_print_num_s(intmax_t n, int base, printf_conv_spec spec,
 			  printf_emit emit);
 void __printf_print_num_u(uintmax_t n, int base, printf_conv_spec spec,
 			  bool uppercase_hex, printf_emit emit);
+void __debug_print_conv_spec(printf_conv_spec spec);
+void __debug_print_resolved_args(void);
+
 
 /* default emit functions */
 void __putchar_emit(void *cookie, char c);

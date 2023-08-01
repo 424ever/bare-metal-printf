@@ -21,8 +21,6 @@ static int  parse_conv_spec(const char *str, printf_conv_spec *spec);
 static int parse_width(const char *str, int *width, printf_prec_flags_t *flags);
 static int printf_print_conv_spec(const char *format, va_list *ap,
 				  printf_emit emit);
-static void debug_print_conv_spec(printf_conv_spec spec);
-static void debug_print_resolved_args(void);
 static void resolve_numbered_arg_values(const char *format, va_list *ap);
 static printf_resolved_arg_type get_type_for(printf_conv_spec spec);
 static void pop_arg_of_type(printf_resolved_arg_type type, va_list *ap,
@@ -95,6 +93,12 @@ int printf_print_conv_spec(const char *format, va_list *ap, printf_emit emit)
 				.value.si;
 		else
 			spec.min_field_width = va_arg(*ap, int);
+
+		if (spec.min_field_width < 0)
+		{
+			spec.flags |= PRINTF_FLG_LEFT_JUST;
+			spec.min_field_width *= -1;
+		}
 	}
 
 	if (spec.precision_flags & PRINTF_FLG_PREC_ARG)
@@ -104,6 +108,9 @@ int printf_print_conv_spec(const char *format, va_list *ap, printf_emit emit)
 			    resolved_numbered_args[spec.precision].value.si;
 		else
 			spec.precision = va_arg(*ap, int);
+
+		if (spec.precision < 0)
+			spec.precision = 0;
 	}
 
 	if (printf_using_numbered_args)
@@ -420,7 +427,7 @@ int parse_width(const char *str, int *width, printf_prec_flags_t *flags)
 }
 
 #ifdef DEBUG
-void debug_print_conv_spec(printf_conv_spec spec)
+void __debug_print_conv_spec(printf_conv_spec spec)
 {
 	puts("SPEC\n");
 
@@ -469,14 +476,14 @@ void debug_print_conv_spec(printf_conv_spec spec)
 	puts("'\n");
 }
 #else
-void debug_print_conv_spec(printf_conv_spec spec)
+void __debug_print_conv_spec(printf_conv_spec spec)
 {
 	(void) spec;
 }
 #endif
 
 #ifdef DEBUG
-void debug_print_resolved_args(void)
+void __debug_print_resolved_args(void)
 {
 	size_t i;
 
@@ -493,7 +500,7 @@ void debug_print_resolved_args(void)
 	}
 }
 #else
-void debug_print_resolved_args(void)
+void __debug_print_resolved_args(void)
 {
 }
 #endif
