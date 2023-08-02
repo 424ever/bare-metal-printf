@@ -133,6 +133,8 @@ void __printf_char_string(printf_conv_spec spec, printf_arg_value value,
 			  printf_emit emit);
 void __printf_decimal(printf_conv_spec spec, printf_arg_value value,
 		      printf_emit emit);
+void __printf_unsigned(int base, printf_conv_spec spec, printf_arg_value value,
+		       printf_emit emit);
 void __printf_unimplemented_specifier(char specifier, printf_emit emit);
 
 #endif

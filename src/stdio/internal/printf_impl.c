@@ -133,6 +133,16 @@ int printf_print_conv_spec(const char *format, va_list *ap, printf_emit emit)
 	case 's':
 		__printf_char_string(spec, value, emit);
 		break;
+	case 'o':
+		__printf_unsigned(8, spec, value, emit);
+		break;
+	case 'u':
+		__printf_unsigned(10, spec, value, emit);
+		break;
+	case 'x':
+	case 'X':
+		__printf_unsigned(16, spec, value, emit);
+		break;
 	case '%':
 		__emit_char(emit, '%');
 		break;

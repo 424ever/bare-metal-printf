@@ -14,6 +14,7 @@ CFLAGS += -ffreestanding -O2 -Wall -Wextra -Werror -Iinclude -pedantic-errors -D
 
 OBJ = $(OBJDIR)/boot.o                                          \
       $(OBJDIR)/ctype/isdigit.o                                 \
+      $(OBJDIR)/ctype/isupper.o                                 \
       $(OBJDIR)/errno/errno_location.o                          \
       $(OBJDIR)/io/inb.o                                        \
       $(OBJDIR)/io/outb.o                                       \
@@ -26,6 +27,7 @@ OBJ = $(OBJDIR)/boot.o                                          \
       $(OBJDIR)/stdio/internal/printf_impl.o                    \
       $(OBJDIR)/stdio/internal/printf_num.o                     \
       $(OBJDIR)/stdio/internal/printf_unimplemented_specifier.o \
+      $(OBJDIR)/stdio/internal/printf_unsigned.o                \
       $(OBJDIR)/stdio/printf.o                                  \
       $(OBJDIR)/stdio/putchar.o                                 \
       $(OBJDIR)/stdio/puts.o                                    \

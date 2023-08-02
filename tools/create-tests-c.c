@@ -16,7 +16,8 @@ static void rtrim(char *s)
 
 int main(int argc, char **argv)
 {
-	char *ptr;
+	char *ptr1;
+	char *ptr2;
 	int   num;
 	int   n;
 	char  expect[1000];
@@ -39,36 +40,43 @@ int main(int argc, char **argv)
 
 	while (fgets(buf, 1000, in) != NULL)
 	{
-		if (buf[0] == '#' || buf[0] == '!' || buf[0] == '\n')
+		ptr1 = buf;
+		if (buf[0] == '#' ||
+		    (buf[0] == '!' && (buf[1] == 'C' || buf[2] == 'C')) ||
+		    buf[0] == '\n')
 			continue;
+
+		if (buf[0] == '!')
+			ptr1 = strchr(ptr1, ' ');
+
 		if (sscanf(buf, "%d \"%[^\"]\" \"%[^\"]\" %n", &num, expect,
 			   format, &n) != 3)
 			continue;
 		fputs("  printf_test(", out);
 		fprintf(out, "\"%d\", \"%s\", \"%s\"", num, expect, format);
 
-		ptr = buf + n;
-		for (; isspace(*ptr); ++ptr)
+		ptr2 = buf + n;
+		for (; isspace(*ptr2); ++ptr2)
 			;
-		while (ptr != NULL)
+		while (ptr2 != NULL)
 		{
-			if (sscanf(ptr, " \"%[^\"]\"%n ", arg, &n) > 0)
+			if (sscanf(ptr2, " \"%[^\"]\"%n ", arg, &n) > 0)
 			{
 				fprintf(out, ", \"%s\"", arg);
-				ptr += n;
+				ptr2 += n;
 			}
-			else if (sscanf(ptr, " '%[^']'%n ", arg, &n) > 0)
+			else if (sscanf(ptr2, " '%[^']'%n ", arg, &n) > 0)
 			{
 				fprintf(out, ", '%s'", arg);
-				ptr += n;
+				ptr2 += n;
 			}
-			else if (sscanf(ptr, " %s%n ", arg, &n) > 0)
+			else if (sscanf(ptr2, " %s%n ", arg, &n) > 0)
 			{
 				fprintf(out, ", %s", arg);
-				ptr += n;
+				ptr2 += n;
 			}
 			else
-				ptr = NULL;
+				ptr2 = NULL;
 		}
 
 		fputs(");\n", out);
