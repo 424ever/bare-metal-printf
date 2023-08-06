@@ -4,13 +4,13 @@ GENDIR = gen
 TOOLSDIR = tools
 ISODIR = isodir
 GRUBDIR = isodir/boot/grub
-CC = i686-elf-gcc
+XCC = i686-elf-gcc
 KERNEL = $(ISODIR)/boot/printf.bin
 ISO = printf.iso
 GRUB_PREFIX ?= grub2
 CONSOLE ?= vga
 
-CFLAGS += -ffreestanding -O2 -Wall -Wextra -Werror -Iinclude -pedantic-errors -DDEBUG -Wno-unused-function
+XCFLAGS += -ffreestanding -O2 -Wall -Wextra -Werror -Iinclude -pedantic-errors -DDEBUG -Wno-unused-function
 
 OBJ = $(OBJDIR)/boot.o                                          \
       $(OBJDIR)/ctype/isdigit.o                                 \
@@ -54,20 +54,17 @@ $(GENDIR)/tests.c: printf-tests.txt $(TOOLSDIR)/create-tests-c
 	mkdir -p $(GENDIR)
 	$(TOOLSDIR)/create-tests-c printf-tests.txt $(GENDIR)/tests.c
 
-$(TOOLSDIR)/create-tests-c: $(TOOLSDIR)/create-tests-c.c
-	cc -o $@ $<
-
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	mkdir -p $(dir $@)
-	$(CC) -c -o $@ $(CFLAGS) $<
+	$(XCC) -c -o $@ $(XCFLAGS) $<
 
 $(OBJDIR)/%.o: $(GENDIR)/%.c
 	mkdir -p $(dir $@)
-	$(CC) -c -o $@ $(CFLAGS) $<
+	$(XCC) -c -o $@ $(XCFLAGS) $<
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.S
 	mkdir -p $(dir $@)
-	$(CC) -c -o $@ $(CFLAGS) $<
+	$(XCC) -c -o $@ $(XCFLAGS) $<
 
 image: $(KERNEL) $(GRUBDIR)/grub.cfg
 	$(GRUB_PREFIX)-file --is-x86-multiboot $(KERNEL)
@@ -79,7 +76,7 @@ printf-tests.txt:
 kernel: $(KERNEL)
 
 $(KERNEL): $(OBJ) $(GRUBDIR)
-	$(CC) -T linker.ld -o $@ -ffreestanding -nostdlib $(OBJ) -lgcc
+	$(XCC) -T linker.ld -o $@ -ffreestanding -nostdlib $(OBJ) -lgcc
 
 $(GRUBDIR):
 	mkdir -p $@
@@ -94,4 +91,5 @@ clean:
 	rm -f $(ISO)
 	rm -rf $(ISODIR)
 	rm -f printf-tests.txt
+	rm -f $(TOOLSDIR)/create-tests-c
 
